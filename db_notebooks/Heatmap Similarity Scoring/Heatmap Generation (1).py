@@ -33,33 +33,33 @@ import sys
 
 # COMMAND ----------
 
-from azureml.core.authentication import InteractiveLoginAuthentication
-
-interactive_auth = InteractiveLoginAuthentication(tenant_id="72f988bf-86f1-41af-91ab-2d7cd011db47")
+tenant_id = "72f988bf-86f1-41af-91ab-2d7cd011db47"
+client_id = "79ed102f-81b9-4f7d-8d77-54253f6ab6c0"
+client_secret = "hA68Q~bL--tSiuUxHBKSIe4u7Zi6uKzdmMpSfa7u"
 
 # COMMAND ----------
 
-from azure.identity import DefaultAzureCredential,AzureCliCredential, ChainedTokenCredential, ManagedIdentityCredential
+from azure.identity import DefaultAzureCredential,AzureCliCredential, ChainedTokenCredential, ManagedIdentityCredential,InteractiveBrowserCredential, ClientSecretCredential
 from azure.keyvault.secrets import SecretClient
 
-managed_identity = ManagedIdentityCredential()
-azure_cli = AzureCliCredential()
-credential_chain = ChainedTokenCredential(managed_identity, azure_cli)
+client_identity = ClientSecretCredential(tenant_id = tenant_id, client_id = client_id, client_secret = client_secret)
+default_identity = DefaultAzureCredential(managed_identity_client_id='17a8da9f-2bd2-4cdf-be6e-137f8f45342c')
+managed_identity = ManagedIdentityCredential(client_id='e5ed7a0f-c3cf-4d70-b2d7-a893d9a41c19')
+# azure_cli = AzureCliCredential()
+# credential_chain = ChainedTokenCredential(managed_identity, azure_cli)
 
-secret_client = SecretClient(vault_url="https://rgautokeyvault.vault.azure.net/", credential=interactive_auth)
+secret_client = SecretClient(vault_url="https://rgautokeyvault.vault.azure.net/", credential=client_identity)
 
-# COMMAND ----------
-
-secret_client.get_secret("blob-container-key")
+secret = secret_client.get_secret("blobcontainerkey")
 
 # COMMAND ----------
 
 dbutils.fs.mount(
   source = "wasbs://container-example@rgdbautodev001.blob.core.windows.net",
   mount_point = "/mnt/blob-storage",
-  extra_configs = {"fs.azure.account.key.rgdbautodev001.blob.core.windows.net":
-                    dbutils.secrets.get(scope = "databricks-secret-scope",
-                                        key = "blob-container-key")})
+  extra_configs = {"fs.azure.account.key.rgdbautodev001.blob.core.windows.net": secret.value})
+#                     dbutils.secrets.get(scope = "databricks-secret-scope",
+#                                         key = "blob-container-key")})
 
 # COMMAND ----------
 
@@ -105,10 +105,6 @@ df = spark.read.parquet("/mnt/blob-storage/tracking_data.parquet")
 # COMMAND ----------
 
 display(df)
-
-# COMMAND ----------
-
-df.count()
 
 # COMMAND ----------
 
@@ -238,10 +234,6 @@ orig_just_xy, df_tracking, tracking_cols = get_xy_data(df, velocity=False, divid
 
 # COMMAND ----------
 
-display(orig_just_xy)
-
-# COMMAND ----------
-
 
 #Court Class
 class Court:
@@ -364,7 +356,7 @@ df_all = {"courts": groupby_to_courts(orig_just_xy, velocity=False, divider=True
 
 # COMMAND ----------
 
-additional_label = '0620'
+additional_label = '0622'
 if additional_label:
   additional_label = '_' + additional_label
 else:
@@ -426,11 +418,3 @@ for jig in save_jig:
 # COMMAND ----------
 
 display(df_heatmaps)
-
-# COMMAND ----------
-
-df_heatmaps.count()
-
-# COMMAND ----------
-
-

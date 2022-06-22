@@ -51,10 +51,10 @@ import random
 # This Model data, will
 # 1) read in the "heatmaps per player per frame" from tracking data.
 
-run_name = '0620'
+run_name = '0622'
 
 #MATCH TO HEATMAPS OUTPUT: below should match that chosen from Generate Heatmaps notebook so can find heatmaps
-additional_label = '0620'
+additional_label = '0622'
 
 #Below doesn't matter as much, can make unique name for yourself
 experiment_name = "full_results" + run_name
@@ -373,10 +373,6 @@ if building_model_data:
   candidate_sets = model_data.sample_data.get_candidates(vae_vgg_vae_var_single.latent_dim)
 else:
   candidate_sets = sample_data.get_candidates(vae_vgg_vae_var_single.latent_dim)
-
-# COMMAND ----------
-
-candidate_sets
 
 # COMMAND ----------
 
@@ -724,10 +720,6 @@ class GameLabels:
       r_str = f"GameId: {game_id}\nDividerId: {dividerId}\nOffence: {team_name}\nDefence: {defence_name}\nPeriod {period}\n"
       r_str += f"Start GC: {gc_start_time}\nEnd GC: {gc_end_time}"
       return r_str
-
-# COMMAND ----------
-
-find_index(gameId = '0022000085', divider_id = 307, X_test_labels = X_test_labels, X_train_labels = X_train_labels)
 
 # COMMAND ----------
 
